@@ -1,25 +1,38 @@
-name: Generate Git-Koi
+# Copy into your profile repository as .github/workflows/koi.yml, then embed
+# <img src="koi/koi.gif" width="256" alt="My koi"> in its README.md.
+name: Koi
 
 on:
   schedule:
-    # Runs every day at midnight (UTC)
-    - cron: '0 0 * * *'
-  workflow_dispatch: # Allows you to run it manually anytime
+    # Just after midnight UTC, so the koi shows the day that just ended.
+    - cron: "20 0 * * *"
+  workflow_dispatch:
+  push:
+    paths: [.github/workflows/koi.yml]
+
+permissions:
+  contents: write
+
+concurrency: koi
 
 jobs:
-  build:
+  koi:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # Needed to update your README
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-
-      - name: Generate Koi Fish
-        uses: yalongwastaken/git-profile-koi@v1
-        # The Action automatically uses its built-in token to fetch your stats
-        
-      - name: Commit and Push Changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - uses: actions/checkout@v7
+      - uses: yalongwastaken/git-koi@v1
         with:
-          commit_message: "Update daily git-koi pixel art"
+          body: white
+          output-dir: koi
+      - name: Commit the koi if it changed
+        shell: bash
+        run: |
+          git add koi/koi.gif
+          if git diff --cached --quiet; then
+            echo "The koi is unchanged; nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --quiet --message "koi: draw the day's koi"
+          git push --quiet
