@@ -1,0 +1,25 @@
+name: Generate Git-Koi
+
+on:
+  schedule:
+    # Runs every day at midnight (UTC)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows you to run it manually anytime
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to update your README
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Generate Koi Fish
+        uses: yalongwastaken/git-profile-koi@v1
+        # The Action automatically uses its built-in token to fetch your stats
+        
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update daily git-koi pixel art"
